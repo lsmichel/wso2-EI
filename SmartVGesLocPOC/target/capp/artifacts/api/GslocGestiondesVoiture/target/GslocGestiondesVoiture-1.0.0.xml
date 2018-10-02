@@ -1,0 +1,2123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/gsloc/api" name="GslocGestiondesVoiture" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST" url-mapping="/gestLoc/crm/user/account/initiate">
+        <inSequence>
+            <payloadFactory media-type="json">
+                <format>{
+    "processDefinitionId": "CreateAccountProd:1:5004",
+    "variables": [
+      {
+        "name":"motdepass",
+        "value":"$1"
+      },
+       {
+        "name":"nomclient",
+        "value":"$2"
+      },
+       {
+        "name":"prenomclient",
+        "value":"$3"
+      },
+      {
+        "name":"email",
+        "value":"$4"
+      },
+      {
+        "name":"numtel",
+        "value":"$5"
+      },
+      {
+        "name":"adresse",
+        "value":"$6"
+      }
+   ]
+}</format>
+                <args>
+                    <arg evaluator="json" expression="$.motdepass"/>
+                    <arg evaluator="json" expression="$.nomclient"/>
+                    <arg evaluator="json" expression="$.prenomclient"/>
+                    <arg evaluator="json" expression="$.email"/>
+                    <arg evaluator="json" expression="$.numtel"/>
+                    <arg evaluator="json" expression="$.adresse"/>
+                </args>
+            </payloadFactory>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <log description="" level="full"/>
+            <property expression="fn:concat('Basic ', base64Encode('admin:admin'))" name="Authorization" scope="transport" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <send>
+                <endpoint key="SmartVAccountInitEP"/>
+            </send>
+        </inSequence>
+        <outSequence>
+            <property expression="json-eval($.id)" name="uri.var.process_instance" scope="default" type="STRING"/>
+            <property expression="fn:concat('Basic ', base64Encode('admin:admin'))" name="Authorization" scope="transport" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <call>
+                <endpoint key="SmartVGetBPMNInstanceEP"/>
+            </call>
+            <script language="nashornJs"><![CDATA[var payload = mc.getPayloadJSON();
+var response = {
+   processInstance : payload ,
+   hasError :   false ,
+   message:   "succes"
+} ;
+mc.setPayloadJSON(response);]]></script>
+            <send/>
+        </outSequence>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"hasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requeter"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/user/account/getByCriteria">
+        <inSequence>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <call>
+                <endpoint key="SmartVAccountGetByCriteria"/>
+            </call>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"HasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requette"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/user/account/create">
+        <inSequence>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <call>
+                <endpoint key="SmartVmicroServiceEndpoint"/>
+            </call>
+            <log level="full"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <switch source="json-eval($.hasError)">
+                <case regex="false">
+                    <log level="custom">
+                        <property name="text" value="default"/>
+                    </log>
+                    <log level="full"/>
+                    <property description="saveuserEmail" expression="json-eval($.resultat[0].email)" name="user_email" scope="default" type="STRING"/>
+                    <property expression="json-eval($.resultat[0].email)" name="uri.var.user" scope="default" type="STRING"/>
+                    <property expression="json-eval($.resultat[0].motdepass)" name="uri.var.passwd" scope="default" type="STRING"/>
+                    <script description="" language="js"><![CDATA[var usname = mc.getProperty("uri.var.user").toString();
+var length = usname.length ;
+var log = mc.getServiceLog();
+usname=usname.replace('@', '.')
+mc.setProperty("uri.var.user", usname);]]></script>
+                    <log level="custom">
+                        <property name="testlog" value="pass this setp"/>
+                    </log>
+                    <call>
+                        <endpoint key="SmartVAccountCreationEP"/>
+                    </call>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <switch source="json-eval($.HasError)">
+                        <case regex="false">
+                            <log level="custom">
+                                <property name="text" value="account  created"/>
+                            </log>
+                            <payloadFactory media-type="json">
+                                <format>{
+									"HasError": false ,
+									"Message" : "le compte a ete creé avec succes"
+									}</format>
+                                <args/>
+                            </payloadFactory>
+                            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                            <respond/>
+                        </case>
+                        <default>
+                            <log level="custom">
+                                <property name="text" value="account not created"/>
+                            </log>
+                            <payloadFactory media-type="json">
+                                <format>{
+									"email": "$1"
+									}
+								</format>
+                                <args>
+                                    <arg evaluator="xml" expression="get-property('user_email')"/>
+                                </args>
+                            </payloadFactory>
+                            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                            <call>
+                                <endpoint key="SmartvmicroserviceDelete"/>
+                            </call>
+                            <payloadFactory media-type="json">
+                                <format>{
+									     "HasError": true ,
+									     "Message" : "impossible de creer le compte utilisateur"
+									}</format>
+                                <args/>
+                            </payloadFactory>
+                            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                            <log level="full"/>
+                            <respond/>
+                        </default>
+                    </switch>
+                </case>
+                <default>
+                    <log level="custom">
+                        <property name="text" value="une erreur"/>
+                    </log>
+                    <payloadFactory media-type="json">
+                        <format>{
+							      "HasError": true ,
+							      "Message" : "impossible de creer le client"
+							}</format>
+                        <args/>
+                    </payloadFactory>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                    <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <log level="full"/>
+                    <respond/>
+                </default>
+            </switch>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					      "HasError": true ,
+					      "Message" : "une erreurs c'est produit aucours du traitement de la requette"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="OPTIONS POST" url-mapping="/redis">
+        <inSequence>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <payloadFactory media-type="json">
+                <format>{
+					"datas":[{
+					   "matricule":"$1"
+					 }
+					]
+					}</format>
+                <args>
+                    <arg evaluator="json" expression="$.matricule"/>
+                </args>
+            </payloadFactory>
+            <sequence key="GeslocAccountMgtCallBps"/>
+            <switch source="json-eval($.hasError)">
+                <case regex="false">
+                    <log level="custom">
+                        <property name="property_name" value="opération éffectuée avec succès"/>
+                    </log>
+                    <script language="nashornJs"><![CDATA[var payload = mc.getPayloadJSON();
+var items = payload.items ;
+var matricule = items[0].matricule;
+var response = {
+    matricule : matricule.toString() ,
+   HasError :   false ,
+   message:   "succes"
+} ;
+mc.setPayloadJSON(response);]]></script>
+                    <log level="full"/>
+                </case>
+                <default>
+                    <log level="custom">
+                        <property name="property_name" value="opération échouée"/>
+                    </log>
+                </default>
+            </switch>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/user/account/Autenticate">
+        <inSequence>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <property expression="json-eval($.email)" name="uri.var.user" scope="default" type="STRING"/>
+            <property expression="json-eval($.motdepass)" name="uri.var.passwd" scope="default" type="STRING"/>
+            <script language="nashornJs"><![CDATA[var usname = mc.getProperty("uri.var.user").toString();
+var length = usname.length ;
+var log = mc.getServiceLog();
+usname=usname.replace('@', '.')
+mc.setProperty("uri.var.user", usname);]]></script>
+            <call>
+                <endpoint key="SmartVAccountAuthenticate"/>
+            </call>
+            <log level="full"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <switch source="json-eval($.HasError)">
+                <case regex="false">
+                    <payloadFactory media-type="json">
+                        <format>{
+                           "email": "$1"
+                          }</format>
+                        <args>
+                            <arg evaluator="xml" expression="get-property('uri.var.user')"/>
+                        </args>
+                    </payloadFactory>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <call>
+                        <endpoint key="getclientbycriteriaEP"/>
+                    </call>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                    <respond/>
+                </case>
+                <default>
+                    <payloadFactory media-type="json">
+                        <format>{
+					       "hasError": true ,
+					       "Message" : "impossible d'authentifier le client veillé vérifié les paramettre de connection"
+					}</format>
+                        <args/>
+                    </payloadFactory>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                    <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <respond/>
+                </default>
+            </switch>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					      "HasError": true ,
+					      "Message" : "une erreurs c'est produit aucours du traitement de la requette"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="GET" url-mapping="/gestLoc/crm/product/cars/getAll">
+        <inSequence>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <send>
+                <endpoint key="GestLocGetAllCars"/>
+            </send>
+        </inSequence>
+        <outSequence>
+            <script language="nashornJs"><![CDATA[var log = mc.getServiceLog();
+var allCars = mc.getPayloadJSON() ;
+var getAllCarsResponse = {};
+getAllCarsResponse.hasError = false;
+getAllCarsResponse.message = "opération éffectué avec succès" ;
+getAllCarsResponse.itemsVoiture = allCars.result.itemsVoiture;
+mc.setPayloadJSON(getAllCarsResponse)]]></script>
+            <log level="full"/>
+            <send/>
+        </outSequence>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"hasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requeter"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/product/cars/search">
+        <inSequence>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <send>
+                <endpoint key="SmarvGesLocSearchCarEP"/>
+            </send>
+        </inSequence>
+        <outSequence>
+            <script language="nashornJs"><![CDATA[var log = mc.getServiceLog();
+var allCars = mc.getPayloadJSON() ;
+var allRealcars  = [] ;
+if(allCars !=null && allCars.result !=null &&  allCars.result.itemsVoiture !=null && Array.isArray(allCars.result.itemsVoiture)) {
+var  k = 0;
+log.info(JSON.stringify(allCars));
+
+if(allCars !=null && allCars.result !=null &&  allCars.result.itemsVoiture !=null  && allCars.result.itemsVoiture.length > 0)
+{  
+   log.info("******************************ok**********************");
+   var itemsVoiture = allCars.result.itemsVoiture ; 
+   for (var i=0 ; i<itemsVoiture.length ; i++){
+         if(itemsVoiture[i].exist != "no") {
+            log.info("******************************ok**********************");
+             allRealcars[k]= itemsVoiture[i] ;
+             k++ ; 
+     }          
+   }
+}
+}
+else {
+if(allCars !=null && allCars.result !=null &&  allCars.result.itemsVoiture !=null ){
+  allRealcars[0] = allCars.result.itemsVoiture;
+}
+}
+var getAllCarsResponse = {};
+getAllCarsResponse.hasError = false;
+getAllCarsResponse.message = "opération éffectué avec succès" ;
+getAllCarsResponse.itemsVoiture = allRealcars ;
+mc.setPayloadJSON(getAllCarsResponse)]]></script>
+            <send/>
+        </outSequence>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"hasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requeter"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/product/cars/getByCriteria">
+        <inSequence>
+            <property name="enclosing_element" scope="default">
+                <result xmlns=""/>
+            </property>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <script language="nashornJs"><![CDATA[var payload= mc.getPayloadJSON() ;
+var request = {} ;
+if(payload.marque !=null)
+     request.marque = payload.marque ;
+if(payload.type !=null)
+     request.type = payload.type;
+if(payload.serie !=null)
+     request.serie = payload.serie;
+mc.setPayloadJSON(request) ;]]></script>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <call>
+                <endpoint key="SmartVgetModelByCriteriaEP"/>
+            </call>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <switch source="json-eval($.hasError)">
+                <case regex="false">
+                    <property description="InfosModels" expression="$body" name="InfosModels" scope="default" type="STRING"/>
+                    <payloadFactory description="Payload to save all Models" media-type="json">
+                        <format>{
+              "itemsModel": []
+              }</format>
+                        <args/>
+                    </payloadFactory>
+                    <property description="itemsModel" expression="$body" name="itemsModel" scope="default" type="STRING"/>
+                    <script description="Set payload with infoModels" language="nashornJs"><![CDATA[mc.setPayloadXML(mc.getProperty("InfosModels"));]]></script>
+                    <iterate expression="//resultat" id="iterator1">
+                        <target>
+                            <sequence>
+                                <property description="ModelLocal" expression="$body" name="ModelLocal" scope="default" type="OM"/>
+                                <payloadFactory description="{&quot;idmodel&quot;: &quot;$1&quot; }" media-type="json">
+                                    <format>{"idmodel": "$1" }</format>
+                                    <args>
+                                        <arg evaluator="json" expression="$.resultat.idmodel"/>
+                                    </args>
+                                </payloadFactory>
+                                <property action="remove" description="REST_URL_POSTFIX" name="REST_URL_POSTFIX" scope="axis2"/>
+                                <property description="messageType" name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                                <call>
+                                    <endpoint key="getVoitureByModel"/>
+                                </call>
+                                <property description="messageType" name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                                <switch source="json-eval($.hasError)">
+                                    <case regex="false">
+                                        <property name="resuttest" scope="default" type="STRING" value="value"/>
+                                        <script description="" language="nashornJs"><![CDATA[var marque ="";
+var type ="";
+
+var log = mc.getServiceLog();
+var ModelLocal= mc.getProperty("ModelLocal");
+var ModelLocalChildren = ModelLocal.getFirstElement().getChildren();
+//log.info(JSON.parse(ModelLocalChildren));
+var voitureLocal= mc.getPayloadJSON() ;
+var resultat=[];
+
+var marque="";
+var type ="";
+var serie="";
+
+if(ModelLocalChildren.hasNext());
+     ModelLocalChildren.next();
+var count = 0 ;
+while (ModelLocalChildren.hasNext()){
+   
+   if(count==0){
+     marque = ModelLocalChildren.next().getText();
+   log.info("*********************"+ marque +"****************");
+ }
+  if(count==1){
+    type =   ModelLocalChildren.next().getText();
+   log.info("*********************"+ type +"****************");
+
+ }
+ if(count==2){
+   serie =  ModelLocalChildren.next().getText();
+  log.info("*********************"+ serie +"****************");
+ }
+count++ ;
+}
+
+if (voitureLocal.resultat != null && voitureLocal.resultat.length >0 )
+{      
+        
+  for(var i=0 ; i< voitureLocal.resultat.length; i++)
+  {
+    var voiture = {
+           idvoiture : "" ,
+           idmodel   :"" ,
+           couleur   : "",
+           image     : "" ,
+           numcartegrise : "",
+           numchassis    : "" ,
+           nummatricule  : "",
+           marque :"",
+           type :""
+                    } ;
+    voiture.idvoiture= voitureLocal.resultat[i].idvoiture;
+    voiture.idmodel = voitureLocal.resultat[i].idmodel;
+    voiture.couleur = voitureLocal.resultat[i].couleur;
+    voiture.image = voitureLocal.resultat[i].image;
+    voiture.numcartegrise = voitureLocal.resultat[i].numcartegrise;
+    voiture.numchassis = voitureLocal.resultat[i].numchassis;
+    voiture.nummatricule = voitureLocal.resultat[i].nummatricule;
+    voiture.status =  voitureLocal.resultat[i].status ;
+    voiture.marque= marque;
+    voiture.type = type;   
+     voiture.serie = serie;         
+    resultat[i]=voiture;
+  }
+} 
+else {
+  var voiture = {
+           idvoiture : "" ,
+           idmodel   :"" ,
+           couleur   : "",
+           image     : "" ,
+           numcartegrise : "",
+           numchassis    : "" ,
+           nummatricule  : "",
+           marque :"",
+           type :"" ,
+           exist : "no" 
+                    } ;
+    resultat[0]=voiture;
+}
+
+
+var currentItemsVoiture  = {
+  "itemsVoiture":  resultat
+} ;
+mc.setPayloadJSON(currentItemsVoiture) ;
+//mc.setProperty("itemsModel", currentItemsVoiture);]]></script>
+                                    </case>
+                                    <default/>
+                                </switch>
+                            </sequence>
+                        </target>
+                    </iterate>
+                </case>
+                <default>
+                    <payloadFactory media-type="json">
+                        <format>{
+    "itemsReservation": {
+             "result": []
+        }
+}</format>
+                        <args/>
+                    </payloadFactory>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                    <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <respond/>
+                </default>
+            </switch>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <sequence key="AgraggateAllCars"/>
+            <respond/>
+        </outSequence>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"hasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requeter"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="OPTIONS POST" url-mapping="/gestLoc/crm/product/cars/CreateModel">
+        <inSequence>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <log description="infoInit" level="full"/>
+            <call description="createModel">
+                <endpoint key="createModel"/>
+            </call>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <switch description="" source="json-eval($.hasError)">
+                <case regex="false">
+                    <respond/>
+                </case>
+                <default>
+                    <payloadFactory media-type="json">
+                        <format>{
+							      "HasError": true ,
+							      "Message" : "impossible de creer le model"
+							}</format>
+                        <args/>
+                    </payloadFactory>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                    <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <log level="full"/>
+                    <respond/>
+                </default>
+            </switch>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"HasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requette"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="OPTIONS POST" url-mapping="/gestLoc/crm/product/cars/create">
+        <inSequence>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <log level="full"/>
+            <call description="createVoiture">
+                <endpoint key="createVoiture"/>
+            </call>
+            <log level="full"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <switch description="" source="json-eval($.hasError)">
+                <case regex="false">
+                    <respond/>
+                </case>
+                <default>
+                    <payloadFactory media-type="json">
+                        <format>{
+							      "HasError": true ,
+							      "Message" : "impossible de creer la voiture"
+							}</format>
+                        <args/>
+                    </payloadFactory>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                    <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <log level="full"/>
+                    <respond/>
+                </default>
+            </switch>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"HasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requette"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/product/cars/createReservation">
+        <inSequence>
+            <payloadFactory description="" media-type="json">
+                <format>{
+    "idclient": "$1",
+    "idvoiture":"$2",
+    "dateRetour":"$3",
+    "dateSortie":"$4"
+}</format>
+                <args>
+                    <arg evaluator="json" expression="$.idclient"/>
+                    <arg evaluator="json" expression="$.idvoiture"/>
+                    <arg evaluator="json" expression="$.dateRetour"/>
+                    <arg evaluator="json" expression="$.dateSortie"/>
+                </args>
+            </payloadFactory>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <call>
+                <endpoint key="createReservationEP"/>
+            </call>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <switch description="hasError=false" source="json-eval($.hasError)">
+                <case regex="false">
+                    <property description="ResultRequest" expression="$body" name="ResultRequest" scope="default" type="OM"/>
+                    <property description="idvoiture1" expression="json-eval($.resultat[0].idvoiture)" name="idvoiture1" scope="default" type="STRING"/>
+                    <property description="idclient1" expression="json-eval($.resultat[0].idclient)" name="idclient1" scope="default" type="STRING"/>
+                    <property description="idreservation" expression="json-eval($.resultat[0].idreservation)" name="idreservation" scope="default" type="STRING"/>
+                    <payloadFactory media-type="json">
+                        <format>{
+
+           "idvoiture": "$1",
+            "status": "reserve"
+ 
+}</format>
+                        <args>
+                            <arg evaluator="json" expression="$.resultat[0].idvoiture"/>
+                        </args>
+                    </payloadFactory>
+                    <property action="remove" description="REST_URL_POSTFIX" name="REST_URL_POSTFIX" scope="axis2"/>
+                    <call>
+                        <endpoint key="UpdateVehiculeEP"/>
+                    </call>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <switch source="json-eval($.hasError)">
+                        <case regex="false">
+                            <script description="traceResult" language="nashornJs"><![CDATA[var log = mc.getServiceLog();
+var payload= mc.getProperty("ResultRequest") ;
+var chilidren = payload.getFirstElement().getChildren();
+chilidren.next();
+var resultat = chilidren.next();
+var resultChildren =resultat.getChildren();
+
+var idreservation = resultChildren.next().getText();
+
+var idvoiture = resultChildren.next().getText();
+var idclient =  resultChildren.next().getText();
+var dateCom = resultChildren.next().getText();
+var dateRetour = resultChildren.next().getText();
+var dateSortie = resultChildren.next().getText();
+log.info("reservation : "+ idreservation +" "+"voiture : "+ idvoiture +" "+"client : "+ idclient+" "+"dateCom : "+ dateCom+" "+"dateRetour : "+ dateRetour +" "+"dateSortie : "+ dateSortie);
+//mc.setProperty("idvoiture1", idvoiture);
+mc.setProperty("idclient1", idclient);]]></script>
+                            <property expression="json-eval($.resultat[0].idvoiture)" name="idvoiture" scope="default" type="STRING"/>
+                            <payloadFactory description=" &quot;idClient&quot;: &quot;$1&quot;" media-type="json">
+                                <format>{
+ "idClient": "$1"
+}</format>
+                                <args>
+                                    <arg evaluator="xml" expression="get-property('idclient1')"/>
+                                </args>
+                            </payloadFactory>
+                            <property action="remove" description="REST_URL_POSTFIX" name="REST_URL_POSTFIX" scope="axis2"/>
+                            <property description="messageType" name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                            <call>
+                                <endpoint key="getclientbycriteriaEP"/>
+                            </call>
+                            <property description="messageType" name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                            <switch description="hasError=false" source="json-eval($.hasError)">
+                                <case regex="false">
+                                    <property description="ResultClient" expression="$body" name="ResultClient" scope="default" type="OM"/>
+                                    <script description="" language="nashornJs"><![CDATA[var log = mc.getServiceLog();
+//var payload= mc.getPayloadJSON() ;
+//log.info(JSON.stringify(payload));
+
+var voiture= mc.getProperty("idvoiture1") ;
+log.info("L'ID de ma voiture est : "+ voiture);]]></script>
+                                    <payloadFactory description=" &quot;idvoiture&quot;: &quot;$1&quot;" media-type="json">
+                                        <format>{
+      "idvoiture": "$1"
+}</format>
+                                        <args>
+                                            <arg evaluator="xml" expression="get-property('idvoiture1')"/>
+                                        </args>
+                                    </payloadFactory>
+                                    <property action="remove" description="REST_URL_POSTFIX" name="REST_URL_POSTFIX" scope="axis2"/>
+                                    <property description="messageType" name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                                    <call>
+                                        <endpoint key="getVehiculeByCriteriaEP"/>
+                                    </call>
+                                    <property description="messageType" name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                                    <script language="nashornJs"><![CDATA[var marque ="";
+var hasError ="";
+var result = {
+      "idreservation": "",
+            "idvoiture": "",
+            "idclient": "",
+            "dateCom": "",
+            "dateRetour": "",
+            "dateSortie": "",
+            "nom": "",
+            "prenom": "",
+            "adresse": "",
+            "numtel": "",
+            "email": "",
+           "idmodel": "",
+            "couleur": "",
+            "image": "",
+            "numcartegrise": "",
+            "numchassis": "",
+            "nummatricule": "",
+           "status": "",
+           "prixreservation": "",
+          "codereservation" : ""
+} ;
+
+var log = mc.getServiceLog();
+var ResultRequest = mc.getProperty("ResultRequest");
+var children1 = ResultRequest.getFirstElement().getChildren();
+children1.next();
+var resultat = children1.next();
+var resultChildren =resultat.getChildren();
+
+var idreservation = resultChildren.next().getText();
+var idvoiture = resultChildren.next().getText();
+var idclient =  resultChildren.next().getText();
+var dateCom = resultChildren.next().getText();
+var dateRetour = resultChildren.next().getText();
+var dateSortie = resultChildren.next().getText();
+var codereservation = resultChildren.next().getText();
+
+result.idreservation = idreservation;
+result.idvoiture = idvoiture;
+result.idclient = idclient;
+result.dateCom = dateCom;
+result.dateRetour = dateRetour;
+result.dateSortie = dateSortie;
+result.codereservation = codereservation;
+
+
+
+var ResultClient = mc.getProperty("ResultClient");
+var children = ResultClient.getFirstElement().getChildren();
+children.next();
+var resultat2 = children.next();
+var resultChildren2 =resultat2.getChildren();
+
+var idclt = resultChildren2.next().getText();
+var nom = resultChildren2.next().getText();
+var prenom = resultChildren2.next().getText();
+var adresse = resultChildren2.next().getText();
+var numtel = resultChildren2.next().getText();
+var email = resultChildren2.next().getText();
+
+result.nom = nom;
+result.prenom = prenom;
+result.adresse = adresse;
+result.numtel = numtel;
+result.email = email;
+
+
+var voitureLocal= mc.getPayloadJSON() ;
+
+result.idvoiture = voitureLocal.resultat[0].idvoiture;
+result.idmodel =voitureLocal.resultat[0].idmodel;
+result.couleur =voitureLocal.resultat[0].couleur;
+result.image = voitureLocal.resultat[0].image;
+result.numcartegrise =voitureLocal.resultat[0].numcartegrise;
+result.nummatricule =voitureLocal.resultat[0].nummatricule;
+result.numchassis =voitureLocal.resultat[0].numchassis;
+result.status =voitureLocal.resultat[0].status;
+result.prixreservation =voitureLocal.resultat[0].prixreservation;
+
+var resulAsString = JSON.stringify(result);
+var doctor = result;
+
+//mc.setPayloadJSON(doctor) ;
+//log.info(doctor);
+
+var itemsModel = [];
+
+if(itemsModel == null) {
+    itemsModel = [];
+}
+itemsModel[0]= result;
+
+var currentItemsVoiture  = {
+  "hasError": false,
+  "infosreservation":  itemsModel,
+  "Status":"800"
+} ;
+//log.info(JSON.stringify(currentItemsVoiture));
+mc.setPayloadJSON(currentItemsVoiture) ;]]></script>
+                                    <property expression="$body" name="voiturePayLoad" scope="default" type="OM"/>
+                                    <payloadFactory media-type="json">
+                                        <format>{
+  "idmodel": "$1"
+}</format>
+                                        <args>
+                                            <arg evaluator="json" expression="$.infosreservation[0].idmodel"/>
+                                        </args>
+                                    </payloadFactory>
+                                    <call>
+                                        <endpoint key="getByCriteriaModelEP"/>
+                                    </call>
+                                    <property description="messageType" name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                                    <script description="" language="nashornJs"><![CDATA[var modelVoiture = mc.getPayloadJSON();
+var log = mc.getServiceLog();
+
+var voiturePayLoad = mc.getProperty("voiturePayLoad");
+
+
+var expression = "//infosreservation[1]/idreservation";
+var xpath = mc.getXpathResult(expression);
+var idreservation = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/idvoiture";
+var xpath = mc.getXpathResult(expression);
+var idvoiture = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/idclient";
+var xpath = mc.getXpathResult(expression);
+var idclient = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/dateCom";
+var xpath = mc.getXpathResult(expression);
+var dateCom = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/dateRetour";
+var xpath = mc.getXpathResult(expression);
+var dateRetour = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/dateSortie";
+var xpath = mc.getXpathResult(expression);
+var dateSortie = xpath.selectSingleNode(voiturePayLoad).getText();
+
+
+var expression = "//infosreservation[1]/nom";
+var xpath = mc.getXpathResult(expression);
+var nom = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/prenom";
+var xpath = mc.getXpathResult(expression);
+var prenom = xpath.selectSingleNode(voiturePayLoad).getText();
+
+
+var expression = "//infosreservation[1]/adresse";
+var xpath = mc.getXpathResult(expression);
+var adresse = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/numtel";
+var xpath = mc.getXpathResult(expression);
+var numtel = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/email";
+var xpath = mc.getXpathResult(expression);
+var email = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/idmodel";
+var xpath = mc.getXpathResult(expression);
+var idmodel = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/couleur";
+var xpath = mc.getXpathResult(expression);
+var couleur = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/image";
+var xpath = mc.getXpathResult(expression);
+var image = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/numcartegrise";
+var xpath = mc.getXpathResult(expression);
+var numcartegrise = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/numcartegrise";
+var xpath = mc.getXpathResult(expression);
+var numcartegrise = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/numchassis";
+var xpath = mc.getXpathResult(expression);
+var numchassis = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/nummatricule";
+var xpath = mc.getXpathResult(expression);
+var nummatricule = xpath.selectSingleNode(voiturePayLoad).getText();
+
+
+var expression = "//infosreservation[1]/nummatricule";
+var xpath = mc.getXpathResult(expression);
+var nummatricule = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/status";
+var xpath = mc.getXpathResult(expression);
+var status = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/prixreservation";
+var xpath = mc.getXpathResult(expression);
+var prixreservation = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//infosreservation[1]/codereservation";
+var xpath = mc.getXpathResult(expression);
+var codereservation = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var marque = modelVoiture.resultat[0].marque;
+var serie     = modelVoiture.resultat[0].serie;
+var type     = modelVoiture.resultat[0].type;
+
+var result = {
+            "idreservation": idreservation,
+            "idvoiture": idvoiture,
+            "idclient": idclient,
+            "dateCom": dateCom,
+            "dateRetour": dateRetour,
+            "dateSortie": dateSortie,
+            "nom": nom,
+            "prenom": prenom,
+            "adresse": adresse,
+            "numtel": numtel,
+            "email": email,
+           "idmodel": idmodel,
+            "couleur": couleur,
+            "image": image,
+            "numcartegrise": numcartegrise,
+            "numchassis": numchassis,
+            "nummatricule": nummatricule ,
+              "status": status,
+              "prixreservation": prixreservation ,
+             "codereservation" : codereservation,
+             "marque": marque ,
+             "serie":      serie ,
+             "type":      type
+         } ;
+
+
+var itemsModel = [];
+
+if(itemsModel == null) {
+    itemsModel = [];
+}
+itemsModel[0]= result;
+
+var currentItemsVoiture  = {
+  "hasError": false,
+  "infosreservation":  itemsModel,
+  "Status":"800"
+} ;
+//log.info(JSON.stringify(currentItemsVoiture));
+mc.setPayloadJSON(currentItemsVoiture) ;]]></script>
+                                    <respond/>
+                                </case>
+                                <default/>
+                            </switch>
+                        </case>
+                        <default>
+                            <payloadFactory media-type="json">
+                                <format>{
+   "idreservation": "$1"
+}</format>
+                                <args>
+                                    <arg evaluator="xml" expression="get-property('idreservation')"/>
+                                </args>
+                            </payloadFactory>
+                            <property action="remove" description="REST_URL_POSTFIX" name="REST_URL_POSTFIX" scope="axis2"/>
+                            <call>
+                                <endpoint key="deleteReservationEP"/>
+                            </call>
+                            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                            <switch source="json-eval($.hasError)">
+                                <case regex="false">
+                                    <payloadFactory media-type="json">
+                                        <format>{
+	"hasError": true ,
+	"Status":"901",
+         "message" : "$1"
+}</format>
+                                        <args>
+                                            <arg evaluator="json" expression="$.status"/>
+                                        </args>
+                                    </payloadFactory>
+                                </case>
+                                <default>
+                                    <payloadFactory media-type="json">
+                                        <format>{
+	"hasError": true ,
+	"Status":"905",
+         "message" : "$1"
+}</format>
+                                        <args>
+                                            <arg evaluator="json" expression="$.status"/>
+                                        </args>
+                                    </payloadFactory>
+                                </default>
+                            </switch>
+                            <respond/>
+                        </default>
+                    </switch>
+                </case>
+                <default>
+                    <respond/>
+                    <payloadFactory media-type="json">
+                        <format>{
+	"hasError": true ,
+	"Status":"900",
+         "Message" : "$1"
+}</format>
+                        <args>
+                            <arg evaluator="json" expression="$.status"/>
+                        </args>
+                    </payloadFactory>
+                </default>
+            </switch>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"HasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requette"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/product/cars/GetReservationByUser">
+        <inSequence>
+            <property name="enclosing_element" scope="default">
+                <result xmlns=""/>
+            </property>
+            <payloadFactory description="" media-type="json">
+                <format>{
+
+  "idclient": "$1"
+}</format>
+                <args>
+                    <arg evaluator="json" expression="$.idclient"/>
+                </args>
+            </payloadFactory>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <call>
+                <endpoint key="getReservationEP"/>
+            </call>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <property description="ResultReservation" expression="$body" name="ResultReservation" scope="default" type="OM"/>
+            <log level="full"/>
+            <switch source="json-eval($.hasError)">
+                <case regex="false">
+                    <iterate expression="//resultat" id="jsonIterate">
+                        <target>
+                            <sequence>
+                                <property description="LocalReservation" expression="$body" name="LocalReservation" scope="default" type="OM"/>
+                                <property description="idvoiture1" expression="json-eval($.resultat.idvoiture)" name="idvoiture1" scope="default" type="STRING"/>
+                                <payloadFactory description=" &quot;idvoiture&quot;: &quot;$1&quot;" media-type="json">
+                                    <format>{
+      "idvoiture": "$1"
+}</format>
+                                    <args>
+                                        <arg evaluator="xml" expression="get-property('idvoiture1')"/>
+                                    </args>
+                                </payloadFactory>
+                                <property action="remove" description="REST_URL_POSTFIX" name="REST_URL_POSTFIX" scope="axis2"/>
+                                <property description="messageType" name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                                <call>
+                                    <endpoint key="getVehiculeByCriteriaEP"/>
+                                </call>
+                                <property description="messageType" name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                                <property description="voitureLocal" expression="$body" name="voitureLocal" scope="default" type="OM"/>
+                                <log level="full"/>
+                                <payloadFactory media-type="json">
+                                    <format>{
+      "idmodel": "$1"
+}</format>
+                                    <args>
+                                        <arg evaluator="json" expression="$.resultat[0].idmodel"/>
+                                    </args>
+                                </payloadFactory>
+                                <log level="full"/>
+                                <call>
+                                    <endpoint key="getByCriteriaModelEP"/>
+                                </call>
+                                <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                                <log level="full"/>
+                                <switch source="json-eval($.hasError)">
+                                    <case regex="false">
+                                        <script language="nashornJs"><![CDATA[var hasError ="";
+var reservation = {
+            "idreservation": "",
+            "idvoiture": "",
+            "idclient": "",
+            "dateCom": "",
+            "dateRetour": "",
+            "dateSortie": "",
+            "idmodel": "",
+            "couleur": "",
+            "image": "",
+            "numcartegrise": "",
+            "numchassis": "",
+            "nummatricule": "",
+            "marque": "",
+            "type": "",
+            "status": "",
+	   "prixreservation":""
+} ;
+
+var log = mc.getServiceLog();
+
+var voitureLocal= mc.getPayloadJSON();
+var resultat = {} ;
+
+
+reservation.marque = voitureLocal.resultat[0].marque;
+reservation.type = voitureLocal.resultat[0].type;
+
+
+var ResultRequest = mc.getProperty("LocalReservation");
+var resultChildren = ResultRequest.getFirstElement().getChildren();
+
+var idreservation = resultChildren.next().getText();
+var idvoiture = resultChildren.next().getText();
+var idclient =  resultChildren.next().getText();
+var dateCom = resultChildren.next().getText();
+var dateRetour = resultChildren.next().getText();
+var dateSortie = resultChildren.next().getText();
+
+reservation.idreservation = idreservation;
+reservation.idvoiture = idvoiture;
+reservation.idclient = idclient;
+reservation.dateCom = dateCom;
+reservation.dateRetour = dateRetour;
+reservation.dateSortie = dateSortie;
+
+
+var voitLocal = mc.getProperty("voitureLocal");
+
+var children1 = voitLocal.getFirstElement().getChildren();
+children1.next();
+var resul = children1.next();
+var resultChildren2 =resul.getChildren();
+
+
+var idvoiture = resultChildren2.next().getText();
+var idmodel = resultChildren2.next().getText();
+var couleur =  resultChildren2.next().getText();
+var image = resultChildren2.next().getText();
+var numcartegrise = resultChildren2.next().getText();
+var numchassis = resultChildren2.next().getText();
+var nummatricule = resultChildren2.next().getText();
+var status = resultChildren2.next().getText();
+var prixreservation = resultChildren2.next().getText();
+
+
+
+reservation.idvoiture = idvoiture;
+reservation.idmodel = idmodel;
+reservation.idclient = idclient;
+reservation.couleur = couleur;
+reservation.image = image;
+reservation.numcartegrise = numcartegrise;
+reservation.numchassis = numchassis;
+reservation.numchassis = numchassis;
+reservation.nummatricule = nummatricule;
+reservation.status = status;
+reservation.prixreservation = prixreservation;
+
+
+log.info(JSON.stringify(reservation));
+
+
+var currentItemsReservation  = {
+  "infosReservation":  reservation
+} ;
+log.info(JSON.stringify(currentItemsReservation));
+mc.setPayloadJSON(currentItemsReservation) ;]]></script>
+                                    </case>
+                                    <default/>
+                                </switch>
+                            </sequence>
+                        </target>
+                    </iterate>
+                    <loopback/>
+                </case>
+                <default>
+                    <payloadFactory media-type="json">
+                        <format>{
+	"HasError": true ,
+	"Statucode":"900",
+         "Message" : "une erreur s'est produite lors de la récupération de la reservation du client"
+}</format>
+                        <args/>
+                    </payloadFactory>
+                    <respond/>
+                </default>
+            </switch>
+        </inSequence>
+        <outSequence>
+            <aggregate description="" id="jsonIterate">
+                <completeCondition timeout="100">
+                    <messageCount max="-1" min="-1"/>
+                </completeCondition>
+                <onComplete enclosingElementProperty="enclosing_element" expression="//infosReservation">
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                </onComplete>
+            </aggregate>
+            <respond/>
+        </outSequence>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"HasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requette"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/service/reservation/createConducteur">
+        <inSequence>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <send>
+                <endpoint key="CreateConducteurEP"/>
+            </send>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"HasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requette"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/service/reservation/createMouvement">
+        <inSequence>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <send>
+                <endpoint key="CreateMvtEP"/>
+            </send>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"HasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requette"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/service/reservation/create">
+        <inSequence>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <property expression="json-eval($.email)" name="emailClient" scope="default" type="STRING"/>
+            <property expression="json-eval($.idVoiture)" name="idVoiture" scope="default" type="STRING"/>
+            <property expression="json-eval($.dateSortie)" name="dateSortie" scope="default" type="STRING"/>
+            <property expression="json-eval($.dateRetour)" name="dateRetour" scope="default" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>{
+     "email": "$1"
+}</format>
+                <args>
+                    <arg evaluator="json" expression="$.email"/>
+                </args>
+            </payloadFactory>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <call>
+                <endpoint key="SmartVGestLocGetClientByCriteria"/>
+            </call>
+            <property expression="count(//resultat)" name="resulNumber" scope="default" type="DOUBLE"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <switch source="json-eval($.hasError)">
+                <case regex="false">
+                    <filter xpath="get-property('resulNumber') >0">
+                        <then>
+                            <property group="0" name="processId" pattern="gslocReservationProcessProd:1:5008" scope="default" type="STRING" value="value"/>
+                            <log separator="********************here*********************"/>
+                            <payloadFactory media-type="json">
+                                <format>{
+    "processDefinitionId": "$1",
+    "variables": [
+      
+       {
+        "name":"nomclient",
+        "value":"$2"
+      },
+       {
+        "name":"contactclient",
+        "value":"$3"
+      },
+       {
+        "name":"prenomclient",
+        "value":"$4"
+      },
+      {
+        "name":"emailclient",
+        "value":"$5"
+      },
+      
+      {
+        "name":"dateSortie",
+        "value":"$6"
+      },
+       {
+        "name":"dateRetour",
+        "value":"$7"
+      },
+       {
+        "name":"idclient",
+        "value":"$8"
+      },
+       {
+        "name":"idvoiture",
+        "value":"$9"
+      }
+   ]
+}</format>
+                                <args>
+                                    <arg evaluator="xml" expression="get-property('processId')"/>
+                                    <arg evaluator="json" expression="$.resultat[0].nom"/>
+                                    <arg evaluator="json" expression="$.resultat[0].numtel"/>
+                                    <arg evaluator="json" expression="$.resultat[0].prenom"/>
+                                    <arg evaluator="json" expression="$.resultat[0].email"/>
+                                    <arg evaluator="xml" expression="get-property('dateSortie')"/>
+                                    <arg evaluator="xml" expression="get-property('dateRetour')"/>
+                                    <arg evaluator="json" expression="$.resultat[0].idclient"/>
+                                    <arg evaluator="xml" expression="get-property('idVoiture')"/>
+                                </args>
+                            </payloadFactory>
+                            <log level="full"/>
+                            <sequence key="SmartvGestLocCreateBpmnInstance"/>
+                            <script language="nashornJs"><![CDATA[var process = {};
+process.processInstance = mc.getPayloadJSON() ;
+process.hasError = false ;
+process.message = "opearation effectué avec succès" ;
+mc.setPayloadJSON(process)]]></script>
+                            <respond/>
+                        </then>
+                        <else>
+                            <payloadFactory media-type="json">
+                                <format>{
+					            "hasError": true ,
+					            "Message" : "ce client n'existe pas"
+					          }</format>
+                                <args/>
+                            </payloadFactory>
+                            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                            <respond/>
+                        </else>
+                    </filter>
+                </case>
+                <default>
+                    <payloadFactory media-type="json">
+                        <format>{
+					            "hasError": true ,
+					            "Message" : "ce client n'existe pas"
+					          }</format>
+                        <args/>
+                    </payloadFactory>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                    <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <respond/>
+                </default>
+            </switch>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"hasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requeter"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/product/cars/reservation/getByUser">
+        <inSequence>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <send>
+                <endpoint key="SmartVGestLocGetReservationByUserEP"/>
+            </send>
+        </inSequence>
+        <outSequence>
+            <script language="nashornJs"><![CDATA[var log = mc.getServiceLog();
+var reserveation = mc.getPayloadJSON() ;
+var getReservationByUserResponse = {};
+getReservationByUserResponse.hasError = false;
+getReservationByUserResponse.message = "opération éffectué avec succès" ;
+getReservationByUserResponse.itemsReservation = reserveation ;
+mc.setPayloadJSON(getReservationByUserResponse)]]></script>
+            <log level="full"/>
+            <send/>
+        </outSequence>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"hasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requeter"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/service/reservation/initiate">
+        <inSequence>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <property expression="json-eval($.email)" name="emailClient" scope="default" type="STRING"/>
+            <property expression="json-eval($.idVoiture)" name="idVoiture" scope="default" type="STRING"/>
+            <property expression="json-eval($.dateSortie)" name="dateSortie" scope="default" type="STRING"/>
+            <property expression="json-eval($.dateRetour)" name="dateRetour" scope="default" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>{
+     "email": "$1"
+}</format>
+                <args>
+                    <arg evaluator="json" expression="$.email"/>
+                </args>
+            </payloadFactory>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <call>
+                <endpoint key="SmartVGestLocGetClientByCriteria"/>
+            </call>
+            <property expression="count(//resultat)" name="resulNumber" scope="default" type="DOUBLE"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <switch source="json-eval($.hasError)">
+                <case regex="false">
+                    <filter xpath="get-property('resulNumber') >0">
+                        <then>
+                            <payloadFactory media-type="json">
+                                <format>{
+    "processDefinitionId": "gslocReservationProcessProd:1:5008",
+    "variables": [
+      
+       {
+        "name":"nomclient",
+        "value":"$1"
+      },
+       {
+        "name":"contactclient",
+        "value":"$2"
+      },
+       {
+        "name":"prenomclient",
+        "value":"$3"
+      },
+      {
+        "name":"emailclient",
+        "value":"$4"
+      },
+      
+      {
+        "name":"dateSortie",
+        "value":"$5"
+      },
+       {
+        "name":"dateRetour",
+        "value":"$6"
+      },
+       {
+        "name":"idclient",
+        "value":"$7"
+      },
+       {
+        "name":"idvoiture",
+        "value":"$8"
+      }
+   ]
+}</format>
+                                <args>
+                                    <arg evaluator="json" expression="$.resultat[0].nom"/>
+                                    <arg evaluator="json" expression="$.resultat[0].numtel"/>
+                                    <arg evaluator="json" expression="$.resultat[0].prenom"/>
+                                    <arg evaluator="json" expression="$.resultat[0].email"/>
+                                    <arg evaluator="xml" expression="get-property('dateSortie')"/>
+                                    <arg evaluator="xml" expression="get-property('dateRetour')"/>
+                                    <arg evaluator="json" expression="$.resultat[0].idclient"/>
+                                    <arg evaluator="xml" expression="get-property('idVoiture')"/>
+                                </args>
+                            </payloadFactory>
+                            <log level="full"/>
+                            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                            <call>
+                                <endpoint key="SmartVProcessManagementCreationEP"/>
+                            </call>
+                            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                            <log level="full"/>
+                            <script language="nashornJs"><![CDATA[var process = {};
+process.processInstance = mc.getPayloadJSON() ;
+process.hasError = false ;
+process.message = "opearation effectué avec succès" ;
+mc.setPayloadJSON(process)]]></script>
+                            <respond/>
+                        </then>
+                        <else>
+                            <payloadFactory media-type="json">
+                                <format>{
+					            "hasError": true ,
+					            "Message" : "ce client n'existe pas"
+					          }</format>
+                                <args/>
+                            </payloadFactory>
+                            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                            <respond/>
+                        </else>
+                    </filter>
+                </case>
+                <default>
+                    <payloadFactory media-type="json">
+                        <format>{
+					            "hasError": true ,
+					            "Message" : "ce client n'existe pas"
+					          }</format>
+                        <args/>
+                    </payloadFactory>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                    <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <respond/>
+                </default>
+            </switch>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"hasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requeter"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/testBPMN3">
+        <inSequence>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <property expression="fn:concat('Basic ', base64Encode('admin:admin'))" name="Authorization" scope="transport" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <send>
+                <endpoint key="SmartVGestLocBPMNEP"/>
+            </send>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <send/>
+        </outSequence>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"hasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requeter"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="GET" url-mapping="/gestLoc/crm/product/cars/getAllModels">
+        <inSequence>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <call>
+                <endpoint key="getAllModelEP"/>
+            </call>
+            <log level="full"/>
+            <script language="js"><![CDATA[var checkExist  = function (tab , searchItem) {
+  var result =  tab.filter(function(item) {
+  return searchItem == item ;
+} ) ;
+return (result.length == 0) ;
+} ;
+var ModelLocal= mc.getPayloadJSON() ;
+var log = mc.getServiceLog();
+//outJSON = ModelLocal.resultat;
+//var groupBy = function(xs, key) {
+//  return xs.reduce(function(rv, x) {
+//    (rv[x[key]] = rv[x[key]] || []).push(x);
+//    return rv;
+//  }, {});
+//};
+//var groubedByMarque=groupBy(outJSON, 'marque')
+//Object.keys(groubedByMarque)
+//log.info(groubedByMarque);
+//mc.setPayloadJSON(groubedByMarque) ;
+//mc.setPayloadJSON(outJSON) ;
+
+var marque ="";
+var type ="";
+var serie ="";
+var Resultmarques=[];
+var Resulttypes=[];
+var Resultseries=[];
+
+if (ModelLocal.resultat != null && ModelLocal.resultat.length >0 )
+{
+
+  for(var i=0 ; i< ModelLocal.resultat.length; i++)
+  {
+      
+ if( checkExist( Resultmarques ,  ModelLocal.resultat[i].marque) )
+                   Resultmarques.push(ModelLocal.resultat[i].marque);
+
+        if( checkExist( Resulttypes  ,  ModelLocal.resultat[i].type) )
+                  Resulttypes.push(ModelLocal.resultat[i].type);
+           if(ModelLocal.resultat[i].serie != null )  {
+  if( checkExist ( Resultseries , ModelLocal.resultat[i].serie) )
+                 Resultseries.push(ModelLocal.resultat[i].serie);   
+ } 
+   
+   }
+   
+}
+
+var allModel  = {
+ "hasError": false,
+ "marques": Resultmarques,
+  "types":  Resulttypes,
+ "series":  Resultseries,
+} ;
+
+//log.info(JSON.stringify(currentItemsVoiture));
+mc.setPayloadJSON(allModel) ;]]></script>
+            <log level="full"/>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"hasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requeter"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/gestLoc/crm/product/cars/getByCriteriaWithAvailibility">
+        <inSequence>
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <property description="" name="enclosing_element" scope="default">
+                <result xmlns=""/>
+            </property>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <call>
+                <endpoint key="SmartVSearchCarsEP"/>
+            </call>
+            <property description="" expression="count(//itemsVoiture) > 0" name="condition" scope="default" type="BOOLEAN"/>
+            <filter regex="true" source="get-property('condition')">
+                <then>
+                    <iterate expression="//itemsVoiture" sequential="true">
+                        <target>
+                            <sequence>
+                                <property expression="$body" name="localCar" scope="default" type="OM"/>
+                                <script language="nashornJs"><![CDATA[var voiturePayLoad =  mc.getProperty("localCar");
+
+var expression = "//itemsVoiture[1]/idvoiture";
+var xpath = mc.getXpathResult(expression);
+var idvoiture = xpath.selectSingleNode(voiturePayLoad).getText(); 
+
+var log = mc.getServiceLog();
+
+
+var payload = {
+ "idvoiture" : "" ,
+ "isNull"      :  "KO"
+};
+
+if(idvoiture !=null && idvoiture !=""  && idvoiture.length > 0){
+payload.idvoiture = idvoiture ;
+}
+
+else {
+payload.isNull = "OK" ;
+payload.idvoiture = idvoiture;
+}
+
+mc.setPayloadJSON(payload)]]></script>
+                                <filter description="" regex="KO" source="json-eval($.isNull)">
+                                    <then>
+                                        <payloadFactory media-type="json">
+                                            <format>{
+   "idvoiture": "237083696801b63ac050f84fb7f8d671cd5da5578914c9a378c044b51394dc23"
+}</format>
+                                            <args>
+                                                <arg evaluator="json" expression="$.idvoiture"/>
+                                            </args>
+                                        </payloadFactory>
+                                        <call>
+                                            <endpoint key="SmartVGetCarAvailability"/>
+                                        </call>
+                                        <script language="nashornJs"><![CDATA[var log = mc.getServiceLog();
+var resultat = [] ;
+var carAvailibility = mc.getPayloadJSON() 
+var voiturePayLoad =  mc.getProperty("localCar");
+var expression = "//itemsVoiture[1]/idvoiture";
+var xpath = mc.getXpathResult(expression);
+var idvoiture = xpath.selectSingleNode(voiturePayLoad).getText(); 
+
+var expression = "//itemsVoiture[1]/idmodel";
+var xpath = mc.getXpathResult(expression);
+var idmodel = xpath.selectSingleNode(voiturePayLoad).getText(); 
+
+var expression = "//itemsVoiture[1]/couleur";
+var xpath = mc.getXpathResult(expression);
+var couleur = xpath.selectSingleNode(voiturePayLoad).getText(); 
+
+var expression = "//itemsVoiture[1]/image";
+var xpath = mc.getXpathResult(expression);
+var image = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//itemsVoiture[1]/numcartegrise";
+var xpath = mc.getXpathResult(expression);
+var numcartegrise = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//itemsVoiture[1]/numchassis";
+var xpath = mc.getXpathResult(expression);
+var numchassis = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//itemsVoiture[1]/marque";
+var xpath = mc.getXpathResult(expression);
+var marque = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//itemsVoiture[1]/type";
+var xpath = mc.getXpathResult(expression);
+var type = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//itemsVoiture[1]/type";
+var xpath = mc.getXpathResult(expression);
+var type = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//itemsVoiture[1]/nummatricule";
+var xpath = mc.getXpathResult(expression);
+var nummatricule = xpath.selectSingleNode(voiturePayLoad).getText();
+
+
+var expression = "//itemsVoiture[1]/status";
+var xpath = mc.getXpathResult(expression);
+var status = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var expression = "//itemsVoiture[1]/serie";
+var xpath = mc.getXpathResult(expression);
+var serie = xpath.selectSingleNode(voiturePayLoad).getText();
+
+var voiture = {
+            "idvoiture":   idvoiture , 
+            "idmodel": idmodel ,
+            "couleur": couleur,
+            "image": image,
+            "numcartegrise": numcartegrise,
+            "numchassis": numchassis ,
+            "marque": marque , 
+            "type": type , 
+            "status": status,
+            "serie": serie,
+            "nummatricule" : nummatricule ,
+            "exist": "yes" ,
+           "carAvailibility" : carAvailibility.resultat
+} ;
+ resultat[0]= voiture;
+
+var currentItemsVoiture  = {
+  "itemsVoiture":  resultat
+} ;
+
+mc.setPayloadJSON(currentItemsVoiture)]]></script>
+                                    </then>
+                                    <else>
+                                        <payloadFactory media-type="json">
+                                            <format>{
+  "itemsVoiture": [
+    {
+      "exist": "no"
+    }
+  ]
+}</format>
+                                            <args/>
+                                        </payloadFactory>
+                                    </else>
+                                </filter>
+                                <aggregate>
+                                    <completeCondition>
+                                        <messageCount max="-1" min="-1"/>
+                                    </completeCondition>
+                                    <onComplete enclosingElementProperty="enclosing_element" expression="//itemsVoiture">
+                                        <log/>
+                                        <respond/>
+                                    </onComplete>
+                                </aggregate>
+                            </sequence>
+                        </target>
+                    </iterate>
+                </then>
+                <else>
+                    <respond/>
+                </else>
+            </filter>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"hasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requeter"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+</api>

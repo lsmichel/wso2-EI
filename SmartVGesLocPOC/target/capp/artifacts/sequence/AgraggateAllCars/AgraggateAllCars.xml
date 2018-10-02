@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="AgraggateAllCars" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <aggregate description="" id="iterator1">
+        <completeCondition timeout="100">
+            <messageCount max="-1" min="-1"/>
+        </completeCondition>
+        <onComplete enclosingElementProperty="enclosing_element" expression="//itemsVoiture">
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+        </onComplete>
+    </aggregate>
+</sequence>

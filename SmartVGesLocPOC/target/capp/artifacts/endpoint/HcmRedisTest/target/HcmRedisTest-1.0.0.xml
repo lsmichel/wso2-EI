@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoint name="HcmRedisTest" xmlns="http://ws.apache.org/ns/synapse">
+    <http method="post" uri-template="http://172.18.0.149:8080/interfacageHcmCmi/redis/get"/>
+</endpoint>

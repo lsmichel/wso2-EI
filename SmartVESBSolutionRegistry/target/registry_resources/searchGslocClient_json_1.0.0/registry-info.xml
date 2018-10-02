@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?><resources>
-    <item>
-        <file>searchGslocClient.json</file>
-        <path>/_system/governance/custom</path>
-        <mediaType>application/json</mediaType>
-    </item>
-</resources>

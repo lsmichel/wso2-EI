@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/gestLoc/crm/voiture" name="admin--SmarTVApiGestionVoiture" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="OPTIONS GET" url-mapping="/getAll">
+        <inSequence>
+            <property name="enclosing_element" scope="default">
+                <result xmlns=""/>
+            </property>
+            <property name="AllAgregateStore" scope="operation">
+                <value xmlns=""/>
+            </property>
+            <property name="allVoiture" scope="operation">
+                <value xmlns=""/>
+            </property>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <!-- <payloadFactory media-type="json"> <format>{ "idmodel": "$1", "nummatricule": 
+				"$2", "numchassis" : "$3", "numcartegrise": "$4", "couleur": "$5" }</format> 
+				<args> <arg evaluator="json" expression="$.matricule"/> </args> </payloadFactory> -->
+            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <call>
+                <endpoint key="getAllVoitureEP"/>
+            </call>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <switch description="" source="json-eval($.hasError)">
+                <case regex="false">
+                    <property description="save info voiture" expression="$body" name="infoVoiture" scope="default" type="STRING"/>
+                    <payloadFactory media-type="json">
+                        <format>{
+							"itemsVoiture": []
+							}</format>
+                        <args/>
+                    </payloadFactory>
+                    <property description="itemsVoiture" expression="$body" name="itemsVoiture" scope="operation" type="STRING"/>
+                    <script language="nashornJs"><![CDATA[mc.setPayloadXML(mc.getProperty("infoVoiture"));]]></script>
+                    <property description="countRequests" expression="count(//resultat)" name="countRequests" scope="default" type="STRING"/>
+                    <log level="full"/>
+                    <iterate description="" expression="//resultat" id="iterator1">
+                        <target>
+                            <sequence>
+                                <property expression="$body" name="voitureLocal" scope="default" type="OM"/>
+                                <payloadFactory media-type="json">
+                                    <format>{"idmodel": "$1" }</format>
+                                    <args>
+                                        <arg evaluator="json" expression="$.resultat.idmodel"/>
+                                    </args>
+                                </payloadFactory>
+                                <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
+                                <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                                <call description="getByCriteriaModel">
+                                    <endpoint key="getByCriteriaModelEP"/>
+                                </call>
+                                <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                                <switch source="json-eval($.hasError)">
+                                    <case regex="false">
+                                        <script description="reponse" language="nashornJs"><![CDATA[var marque ="";
+var type ="";
+var result = {
+ idvoiture : "" ,
+ idmodel   :"" ,
+ couleur   : "",
+ image     : "" ,
+ numcartegrise : "",
+ numchassis    : "" ,
+ nummatricule  : "",
+marque :"",
+type :""
+} ;
+
+
+var log = mc.getServiceLog();
+var voitureLocal= mc.getProperty("voitureLocal");
+var modelLocal= mc.getPayloadJSON() ;
+
+var children = voitureLocal.getFirstElement().getChildren();
+result.idvoiture = children.next().getText();
+result.idmodel = children.next().getText();
+result.couleur = children.next().getText();
+result.image = children.next().getText();
+result.numcartegrise = children.next().getText();
+result.numchassis = children.next().getText();
+result.nummatricule = children.next().getText();
+result. marque=modelLocal.resultat[0].marque;
+result. type=modelLocal.resultat[0].type;
+result.couleur =modelLocal.resultat[0].couleur;
+
+var LastitemsVoiture =[];
+//var itemsVoiturePropertie = mc.getProperty("synapse_itemsVoiture") ;
+//if(itemsVoiturePropertie  != null) 
+  //LastitemsVoiture = itemsVoiturePropertie.itemsVoiture;
+
+
+
+
+//LastitemsVoiture[LastitemsVoiture.length]= result;
+
+var currentItemsVoiture  = {
+ "itemsVoiture":  result
+} ;
+
+mc.setPayloadJSON(currentItemsVoiture)
+mc.setProperty('localAllCars', mc.getPayloadXML());]]></script>
+                                    </case>
+                                    <default/>
+                                </switch>
+                            </sequence>
+                        </target>
+                    </iterate>
+                    <loopback/>
+                </case>
+                <default>
+                    <payloadFactory media-type="json">
+                        <format>{
+					        "hasError": true ,
+					        "Message" : "une erreurs c'est produit aucours du traitement de la requeter"
+					   }</format>
+                        <args/>
+                    </payloadFactory>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                    <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <respond/>
+                </default>
+            </switch>
+        </inSequence>
+        <outSequence>
+            <sequence key="AgraggateAllCars"/>
+            <respond/>
+        </outSequence>
+        <faultSequence>
+            <log level="custom">
+                <property name="text" value="An unexpected error occured"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_MESSAGE')" name="message"/>
+            </log>
+            <log level="custom">
+                <property expression="get-property('ERROR_DETAIL')" name="message"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{
+					"hasError": true ,
+					"Message" : "une erreurs c'est produit aucours du traitement de la requeter"
+					}</format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+            <header name="Content-Type" scope="transport" value="application/json; charset=utf-8"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/count">
+        <inSequence>
+            <property name="it_count" scope="operation" type="STRING" value="0"/>
+            <iterate expression="//symbols/symbol" sequential="true">
+                <target>
+                    <sequence>
+                        <property expression="get-property('operation', 'it_count')" name="synapse_it_count" scope="default" type="STRING"/>
+                        <script language="js"><![CDATA[var cnt_str = mc.getProperty('synapse_it_count');
+     var cnt = parseInt(cnt_str);
+     cnt++;
+     mc.setProperty('synapse_it_count', cnt.toString());]]></script>
+                        <property expression="get-property('synapse_it_count')" name="it_count" scope="operation" type="STRING"/>
+                        <aggregate>
+                            <completeCondition>
+                                <messageCount max="-1" min="-1"/>
+                            </completeCondition>
+                            <onComplete expression="//symbol">
+                                <log level="custom">
+                                    <property expression="get-property('operation','it_count')" name="number of symbols"/>
+                                </log>
+                            </onComplete>
+                        </aggregate>
+                    </sequence>
+                </target>
+            </iterate>
+            <payloadFactory media-type="json">
+                <format>{
+  "resultat" : "$1"
+}</format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('operation','it_count')"/>
+                </args>
+            </payloadFactory>
+            <log level="full"/>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

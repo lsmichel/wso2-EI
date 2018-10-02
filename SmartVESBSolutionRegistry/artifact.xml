@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?><artifacts>
-    <artifact name="searchGslocClient_json" groupId="com.example.SmartVESBSolutionRegistry.resource" version="1.0.0" type="registry/resource" serverRole="EnterpriseIntegrator">
-        <item>
-            <file>searchGslocClient.json</file>
-            <path>/_system/governance/custom</path>
-            <mediaType>application/json</mediaType>
-        </item>
-    </artifact>
-</artifacts>

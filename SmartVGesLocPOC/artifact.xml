@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="SmartVmicroServiceEndpoint" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVmicroServiceEndpoint.xml</file>
+    </artifact>
+    <artifact name="SmartVAccountCreationEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVAccountCreationEP.xml</file>
+    </artifact>
+    <artifact name="SmartvmicroserviceDelete" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartvmicroserviceDelete.xml</file>
+    </artifact>
+    <artifact name="SmartVAccountInitEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVAccountInitEP.xml</file>
+    </artifact>
+    <artifact name="HcmRedisTest" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/HcmRedisTest.xml</file>
+    </artifact>
+    <artifact name="GeslocAccountMgtCallBps" groupId="ci.smile.SmartVESBSolution.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/GeslocAccountMgtCallBps.xml</file>
+    </artifact>
+    <artifact name="SmartVClientDeleteEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVClientDeleteEP.xml</file>
+    </artifact>
+    <artifact name="SmartVAccountGetByCriteria" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVAccountGetByCriteria.xml</file>
+    </artifact>
+    <artifact name="SmartVAccountAuthenticate" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVAccountAuthenticate.xml</file>
+    </artifact>
+    <artifact name="GslocGestiondesVoiture" groupId="ci.smile.SmartVESBSolution.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/GslocGestiondesVoiture.xml</file>
+    </artifact>
+    <artifact name="SmartVCreateVoitureEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVCreateVoitureEP.xml</file>
+    </artifact>
+    <artifact name="admin--SmarTVApiGestionVoiture" groupId="ci.smile.SmartVESBSolution.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/admin--SmarTVApiGestionVoiture.xml</file>
+    </artifact>
+    <artifact name="getAllVoitureEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/getAllVoitureEP.xml</file>
+    </artifact>
+    <artifact name="AgraggateAllCars" groupId="ci.smile.SmartVESBSolution.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/AgraggateAllCars.xml</file>
+    </artifact>
+    <artifact name="GestLocGetAllCars" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/GestLocGetAllCars.xml</file>
+    </artifact>
+    <artifact name="SmartVgetModelByCriteriaEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVgetModelByCriteriaEP.xml</file>
+    </artifact>
+    <artifact name="getVoitureByModel" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/getVoitureByModel.xml</file>
+    </artifact>
+    <artifact name="SmartVSearchCarsEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVSearchCarsEP.xml</file>
+    </artifact>
+    <artifact name="getByCriteriaModel" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/getByCriteriaModel.xml</file>
+    </artifact>
+    <artifact name="getByCriteriaModelEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/getByCriteriaModelEP.xml</file>
+    </artifact>
+    <artifact name="createReservationEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/createReservationEP.xml</file>
+    </artifact>
+    <artifact name="UpdateVehiculeEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/UpdateVehiculeEP.xml</file>
+    </artifact>
+    <artifact name="getclientbycriteriaEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/getclientbycriteriaEP.xml</file>
+    </artifact>
+    <artifact name="getVehiculeByCriteriaEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/getVehiculeByCriteriaEP.xml</file>
+    </artifact>
+    <artifact name="deleteReservationEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/deleteReservationEP.xml</file>
+    </artifact>
+    <artifact name="getReservationEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/getReservationEP.xml</file>
+    </artifact>
+    <artifact name="CreateConducteurEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/CreateConducteurEP.xml</file>
+    </artifact>
+    <artifact name="CreateMvtEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/CreateMvtEP.xml</file>
+    </artifact>
+    <artifact name="SmartVGestLocGetClientByCriteria" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVGestLocGetClientByCriteria.xml</file>
+    </artifact>
+    <artifact name="SmartVGestLocBPMNEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVGestLocBPMNEP.xml</file>
+    </artifact>
+    <artifact name="SmartVGestLocGetReservationByUserEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVGestLocGetReservationByUserEP.xml</file>
+    </artifact>
+    <artifact name="SmartvGestLocCreateBpmnInstance" groupId="ci.smile.SmartVESBSolution.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/SmartvGestLocCreateBpmnInstance.xml</file>
+    </artifact>
+    <artifact name="SmatVLocalBPMNEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmatVLocalBPMNEP.xml</file>
+    </artifact>
+    <artifact name="TestEndPoint" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/TestEndPoint.xml</file>
+    </artifact>
+    <artifact name="TestBpmn" groupId="ci.smile.SmartVESBSolution.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/TestBpmn.xml</file>
+    </artifact>
+    <artifact name="SmartVProcessManagementCreationEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVProcessManagementCreationEP.xml</file>
+    </artifact>
+    <artifact name="getAllModelEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/getAllModelEP.xml</file>
+    </artifact>
+    <artifact name="SmartVGetCarAvailability" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVGetCarAvailability.xml</file>
+    </artifact>
+    <artifact name="SmartVGetBPMNInstanceEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmartVGetBPMNInstanceEP.xml</file>
+    </artifact>
+    <artifact name="SmarvGesLocSearchCarEP" groupId="ci.smile.SmartVESBSolution.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/SmarvGesLocSearchCarEP.xml</file>
+    </artifact>
+</artifacts>
